@@ -51,12 +51,7 @@ THREE.Texture.prototype = {
 
 	set needsUpdate ( value ) {
 
-		if ( value === true ) {
-
-			this.version ++;
-			this.update();
-
-		}
+		if ( value === true ) this.version ++;
 
 	},
 
@@ -179,12 +174,6 @@ THREE.Texture.prototype = {
 		meta.textures[ this.uuid ] = output;
 
 		return output;
-
-	},
-
-	update: function () {
-
-		this.dispatchEvent( { type: 'update' } );
 
 	},
 
