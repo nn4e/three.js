@@ -347,7 +347,9 @@ THREE.Projector = function () {
 
 			} else if ( object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Sprite ) {
 
-				if ( object.material.visible === false ) return;
+				var material = object.material;
+
+				if ( material === null || material.visible === false ) return;
 
 				if ( object.frustumCulled === false || _frustum.intersectsObject( object ) === true ) {
 
@@ -517,7 +519,7 @@ THREE.Projector = function () {
 						var face = faces[ f ];
 
 						material = isFaceMaterial === true
-							 ? objectMaterials.materials[ 0 ] // objectMaterials.materials[ face.materialIndex ]
+							 ? objectMaterials.materials[ face.materialIndex ]
 							 : object.material;
 
 						if ( material === undefined ) continue;
@@ -533,8 +535,10 @@ THREE.Projector = function () {
 						var visible = renderList.checkBackfaceCulling( v1, v2, v3 );
 
 						if ( side !== THREE.DoubleSide ) {
+
 							if ( side === THREE.FrontSide && visible === false ) continue;
 							if ( side === THREE.BackSide && visible === true ) continue;
+
 						}
 
 						_face = getNextFaceInPool();
@@ -825,7 +829,7 @@ THREE.Projector = function () {
 
 	function painterSort( a, b ) {
 
-		if ( a.renderOrder !== b.renderOrder) {
+		if ( a.renderOrder !== b.renderOrder ) {
 
 			return a.renderOrder - b.renderOrder;
 
