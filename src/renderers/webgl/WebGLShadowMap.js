@@ -198,49 +198,37 @@ THREE.WebGLShadowMap = function ( _renderer, _lights, _objects ) {
 
 			// render regular objects
 
-			var webglObject, object, material;
-			var objectMaterial, useMorphing, useSkinning;
+			var webglObject, object, geometry, material;
 
 			for ( var j = 0, jl = _renderList.length; j < jl; j ++ ) {
 
 				webglObject = _renderList[ j ];
 
 				object = webglObject.object;
-				objectMaterial = object.material;
+				geometry = _objects.update( object );
+				material = object.material;
 
-				if ( objectMaterial instanceof THREE.MeshFaceMaterial ) {
+				if ( material instanceof THREE.MeshFaceMaterial ) {
 
-					// For the moment just ignore objects that have multiple materials with different animation methods
-					// Only the first material will be taken into account for deciding which depth material to use for shadow maps
+					var materials = material.materials;
 
-					objectMaterial = object.material.materials[ 0 ];
+					for ( var k = 0, kl = materials.length; k < kl; k ++ ) {
 
-					if ( objectMaterial === null || objectMaterial.visible === false ) continue;
+						material = materials[ k ];
 
-				}
+						if ( material.visible ) {
 
-				useMorphing = object.geometry.morphTargets !== undefined && object.geometry.morphTargets.length > 0 && objectMaterial.morphTargets;
-				useSkinning = object instanceof THREE.SkinnedMesh && objectMaterial.skinning;
+							_renderer.renderBufferDirect( shadowCamera, _lights, null, geometry, getDepthMaterial( object, material ), object );
 
-				if ( object.customDepthMaterial ) {
+						}
 
-					material = object.customDepthMaterial;
-
-				} else if ( useSkinning ) {
-
-					material = useMorphing ? _depthMaterialMorphSkin : _depthMaterialSkin;
-
-				} else if ( useMorphing ) {
-
-					material = _depthMaterialMorph;
+					}
 
 				} else {
 
-					material = _depthMaterial;
+					_renderer.renderBufferDirect( shadowCamera, _lights, null, geometry, getDepthMaterial( object, material ), object );
 
 				}
-
-				_renderer.renderBufferDirect( shadowCamera, _lights, null, material, object );
 
 			}
 
@@ -265,6 +253,39 @@ THREE.WebGLShadowMap = function ( _renderer, _lights, _objects ) {
 		scope.needsUpdate = false;
 
 	};
+
+	function getDepthMaterial( object, material ) {
+
+		var geometry = object.geometry;
+
+		var useMorphing = geometry.morphTargets !== undefined && geometry.morphTargets.length > 0 && material.morphTargets;
+		var useSkinning = object instanceof THREE.SkinnedMesh && material.skinning;
+
+		var depthMaterial;
+
+		if ( object.customDepthMaterial ) {
+
+			depthMaterial = object.customDepthMaterial;
+
+		} else if ( useSkinning ) {
+
+			depthMaterial = useMorphing ? _depthMaterialMorphSkin : _depthMaterialSkin;
+
+		} else if ( useMorphing ) {
+
+			depthMaterial = _depthMaterialMorph;
+
+		} else {
+
+			depthMaterial = _depthMaterial;
+
+		}
+
+		depthMaterial.wireframe = material.wireframe;
+
+		return depthMaterial;
+
+	}
 
 	function projectObject( object, camera ) {
 

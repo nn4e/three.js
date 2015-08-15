@@ -64,7 +64,7 @@ THREE.Object3D = function () {
 	this.matrix = new THREE.Matrix4();
 	this.matrixWorld = new THREE.Matrix4();
 
-	this.matrixAutoUpdate = true;
+	this.matrixAutoUpdate = THREE.Object3D.DefaultMatrixAutoUpdate;
 	this.matrixWorldNeedsUpdate = false;
 
 	this.visible = true;
@@ -80,6 +80,7 @@ THREE.Object3D = function () {
 };
 
 THREE.Object3D.DefaultUp = new THREE.Vector3( 0, 1, 0 );
+THREE.Object3D.DefaultMatrixAutoUpdate = true;
 
 THREE.Object3D.prototype = {
 
@@ -675,7 +676,7 @@ THREE.Object3D.prototype = {
 
 	clone: function ( recursive ) {
 
-		return new THREE.Object3D().copy( this, recursive );
+		return new this.constructor().copy( this, recursive );
 
 	},
 
