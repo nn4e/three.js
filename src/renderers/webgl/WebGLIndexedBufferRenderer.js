@@ -2,7 +2,7 @@
 * @author mrdoob / http://mrdoob.com/
 */
 
-THREE.WebGLBufferRenderer = function ( _gl, extensions, _infoRender ) {
+THREE.WebGLIndexedBufferRenderer = function ( _gl, extensions, _infoRender ) {
 
 	var mode;
 
@@ -12,9 +12,27 @@ THREE.WebGLBufferRenderer = function ( _gl, extensions, _infoRender ) {
 
 	}
 
+	var type, size;
+
+	function setIndex( index ) {
+
+		if ( index.array instanceof Uint32Array && extensions.get( 'OES_element_index_uint' ) ) {
+
+			type = _gl.UNSIGNED_INT;
+			size = 4;
+
+		} else {
+
+			type = _gl.UNSIGNED_SHORT;
+			size = 2;
+
+		}
+
+	}
+
 	function render( start, count ) {
 
-		_gl.drawArrays( mode, start, count );
+		_gl.drawElements( mode, count, type, start * size );
 
 		_infoRender.calls ++;
 		_infoRender.vertices += count;
@@ -44,21 +62,14 @@ THREE.WebGLBufferRenderer = function ( _gl, extensions, _infoRender ) {
 
 		}
 
-		var position = geometry.attributes.position;
+		var index = geometry.attributes.index;
 
-		if ( position instanceof THREE.InterleavedBufferAttribute ) {
-
-			extension.drawArraysInstancedANGLE( mode, 0, position.data.count, geometry.maxInstancedCount );
-
-		} else {
-
-			extension.drawArraysInstancedANGLE( mode, 0, position.count, geometry.maxInstancedCount );
-
-		}
+		extension.drawElementsInstancedANGLE( mode, index.array.length, type, 0, geometry.maxInstancedCount );
 
 	}
 
 	this.setMode = setMode;
+	this.setIndex = setIndex;
 	this.render = render;
 	this.renderGroups = renderGroups;
 	this.renderInstances = renderInstances;
